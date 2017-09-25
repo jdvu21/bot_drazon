@@ -1,46 +1,42 @@
 const Discord = require("discord.js");
 const request = require('request');
 const math = require('mathjs');
-const bot = new Discord.Client();
 const config = require('./config.json');
-const prefix = '-';
-
-
+const bot = new Discord.Client();
 
 // todo: wire up reddit calls to randomly pull in image from r/aww r/foodporn r/earthporn
 
-
 // message event
 bot.on("message", msg => {
-  // prefix check
-  if(!msg.content.startsWith(prefix)) 
+  if(!msg.content.startsWith(config.prefix)) 
     return;
   
   // we dont take commands from other bots
   if (msg.author.bot) 
     return;
 
-  if (msg.content.startsWith(prefix + "ping")) {
-    pong(msg);
-  }
+  if (msg.content.startsWith(config.prefix)) {
+      const args = msg.content.slice(config.prefix.length).trim().split(/ +/g);
+      const command = args.shift().toLowerCase();
 
-  if (msg.content.startsWith(prefix + "help")) {
-    help(msg);
-  }
-
-  if (msg.content.startsWith(prefix + "weather")) {
-    weather(msg);
-  }
-
-  if (msg.content.startsWith(prefix + "roll ")) {
-    roll(msg);
-  }
-
-  if (msg.content.startsWith(prefix + "forecast")) {
-    forecast(msg);
-  }
-  // else
-    return;
+      switch (command) {
+        case "ping" :
+          pong(msg);
+          break;
+        case "help" :
+          help(msg);
+          break;
+        case "roll" :
+          roll(msg, args);
+          break;
+        case "weather" :
+          weather(msg, args);
+          break;
+        /*case "forecast" :
+          forecast(msg);
+          break; */
+      }
+  } return;
 });
 
 var help = function(msg) {
@@ -51,17 +47,13 @@ var pong = function(msg) {
   msg.channel.send("*pong!*");
 }
 
-var weather = function(msg) {
+var weather = function(msg, args) {
 
   let apiKey = config.weather;
-  var passedCity = msg.content.slice(8).trim();
-  var city;
-  if (passedCity) {
-    city = passedCity;
-  }
-  else {
-    city = 'Cleveland';
-  }
+  // var passedCity = msg.content.slice(8).trim();
+  var city = args[0];
+  if (!city) 
+    city = config.homeTown;
   var url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${apiKey}&units=imperial`
 
   request(url, function (err, response, body) {
@@ -91,15 +83,16 @@ var forecast = function(msg) {
   });
 }
 
-var roll = function(msg) {
-  var max = parseInt(msg.content.slice(5).trim());
+var roll = function(msg, args) {
+  // var max = parseInt(msg.content.slice(5).trim());
+  var max = args[0];
   var rand = 1 + Math.floor(Math.random() * max);
   msg.channel.send(`*You rolled ${rand}*`);
 }
 
 // ready event | greeting message
 bot.on('ready', () => {
-  console.log('ayy lmao');
+  console.log('Connected.');
 });
 
 // error logging
