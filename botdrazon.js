@@ -45,10 +45,6 @@ bot.on("message", msg => {
 
 var help = function(msg) {
   msg.channel.send("*Available Commands: \n 1. Help \n 2. Ping \n 3. Roll \n 4. Weather*");
-  // key: 4f7d4945dc23abad
-  // 10 calls per minute ; 500 calls epr day
-  // msg.channel.send("4. Steam");
-  // https://partner.steamgames.com/documentation/webapi
 }
 
 var pong = function(msg) {
@@ -81,7 +77,7 @@ var weather = function(msg) {
 
 var forecast = function(msg) {
   let city = msg.content.slice(8).trim();
-  let apiKey = 'eda072913ca03555c7c0d903bde7ef66';
+  let apiKey = config.weather;
   let url = `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&APPID=${apiKey}&units=imperial`
   
   request(url, function (err, response, body) {
@@ -91,7 +87,6 @@ var forecast = function(msg) {
     else {
       let weather = JSON.parse(body);
       msg.channel.send(weather);
-      // console.log(body);
     }
   });
 }
