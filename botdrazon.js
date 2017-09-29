@@ -2,9 +2,12 @@ const Discord = require("discord.js");
 const request = require('request');
 const math = require('mathjs');
 const config = require('./config.json');
+const snoowrap = require('snoowrap');
 const bot = new Discord.Client();
 
 // todo: wire up reddit calls to randomly pull in image from r/aww r/foodporn r/earthporn
+// todo: letMeGoogleThatForYou
+
 
 // message event
 bot.on("message", msg => {
@@ -50,8 +53,9 @@ var pong = function(msg) {
 var weather = function(msg, args) {
 
   let apiKey = config.weather;
-  // var passedCity = msg.content.slice(8).trim();
   var city = args[0];
+  if (args[1])
+    city += ' ' + args[1];
   if (!city) 
     city = config.homeTown;
   var url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${apiKey}&units=imperial`
@@ -90,13 +94,17 @@ var roll = function(msg, args) {
   msg.channel.send(`*You rolled ${rand}*`);
 }
 
-// ready event | greeting message
+// ready event: on boot access to bot
 bot.on('ready', () => {
-  console.log('Connected.');
+  bot.user.setGame(`A N I M E M E S`);
+  // console.log('Connected.');
+  console.log(`Ready to serve on ${bot.guilds.size} servers, for ${bot.users.size} users.`);
 });
 
 // error logging
-bot.on('error', e => { console.error(e); });
+bot.on('error', (e) => { console.error(e); });
+bot.on('warn', (e) => {console.warn(e); });
+bot.on('debug', (e) => {console.info(e); });
 
 bot.on('disconnect', function(){
   console.log('Disconnecting!');
