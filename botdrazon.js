@@ -38,12 +38,22 @@ bot.on("message", msg => {
         /*case "forecast" :
           forecast(msg);
           break; */
+        case "lenny" :
+          lenny(msg);
+          break;
       }
   } return;
 });
 
 var help = function(msg) {
-  msg.channel.send("*Available Commands: \n 1. Help \n 2. Ping \n 3. Roll \n 4. Weather*");
+  var menu = '```Available Commands:\n' +  
+    '1. Help - prints this menu\n'+
+    '2. Ping - replies pong, use to check if bot is alive\n' + 
+    '3. Roll - input a number, rolls from 1 to that number\n' + 
+    '4. Weather - input a city name, returns their current temp\n' +  
+    '5. Lenny - returns lennyFace' +
+    '```'
+  msg.channel.send(menu);
 }
 
 var pong = function(msg) {
@@ -54,10 +64,10 @@ var weather = function(msg, args) {
 
   let apiKey = config.weather;
   var city = args[0];
-  if (args[1])
-    city += ' ' + args[1];
   if (!city) 
     city = config.homeTown;
+  if (args[1])
+    city += ' ' + args[1];
   var url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${apiKey}&units=imperial`
 
   request(url, function (err, response, body) {
@@ -92,6 +102,10 @@ var roll = function(msg, args) {
   var max = args[0];
   var rand = 1 + Math.floor(Math.random() * max);
   msg.channel.send(`*You rolled ${rand}*`);
+}
+
+var lenny = function(msg) {
+  msg.channel.send(`( ͡° ͜ʖ ͡°)`);
 }
 
 // ready event: on boot access to bot
