@@ -2,7 +2,9 @@ const Discord = require("discord.js");
 const request = require('request');
 const math = require('mathjs');
 const config = require('./config.json');
+const reddit = require('./oauth_info.json')
 const snoowrap = require('snoowrap');
+
 const bot = new Discord.Client();
 
 // todo: wire up reddit calls to randomly pull in image from r/aww r/foodporn r/earthporn
@@ -39,7 +41,10 @@ bot.on("message", msg => {
           forecast(msg);
           break; */
         case "lenny" :
-          lenny(msg);
+          lenny(msg, args);
+          break;
+        case "earth" :
+          earthPorn(msg);
           break;
       }
   } return;
@@ -51,7 +56,9 @@ var help = function(msg) {
     '2. Ping - replies pong, use to check if bot is alive\n' + 
     '3. Roll - input a number, rolls from 1 to that number\n' + 
     '4. Weather - input a city name, returns their current temp\n' +  
-    '5. Lenny - returns lennyFace' +
+    '5. Lenny - pass a number, returns that many lennyFaces' +
+    // Forecast - returns quick 5 day hi/low forecast for passed city
+    // Earth - returns a top r/earthPorn page from today
     '```'
   msg.channel.send(menu);
 }
@@ -75,6 +82,7 @@ var weather = function(msg, args) {
     console.log('error:', error);
   } else {
     let weather = JSON.parse(body);
+    console.log('weather');
     let message = `*It is ${weather.main.temp} degrees in ${weather.name}*`;
     msg.channel.send(message);
     }
@@ -98,14 +106,38 @@ var forecast = function(msg) {
 }
 
 var roll = function(msg, args) {
-  // var max = parseInt(msg.content.slice(5).trim());
   var max = args[0];
   var rand = 1 + Math.floor(Math.random() * max);
   msg.channel.send(`*You rolled ${rand}*`);
 }
 
-var lenny = function(msg) {
-  msg.channel.send(`( ͡° ͜ʖ ͡°)`);
+var lenny = function(msg, args) {
+  var builder = `( ͡° ͜ʖ ͡°)`;
+  if (args[0]) {
+    var count = args[0];
+    if (count > 150) 
+      return;
+
+    for (i = count; i != 1; i--)
+    {
+      builder += ` ( ͡° ͜ʖ ͡°)`;
+    }
+  }
+  msg.channel.send(builder);   
+}
+
+var earthPorn = function(msg) {
+  const r = snoowrap.getAuthUrl({
+    userAgent: 'bot_drazon',
+    clientId: reddit.clientId,
+    clientSecret: reddit.clientSecret,
+    refreshToken: reddit.refreshToken
+});
+
+  msg.channel.send('pretty pictures!');
+  //r.getTop({time: 'day', limit:1}).then(console.log);
+  // r.getTop('earthPorn').then(console.log);
+  // r.getHot().map(post => post.title).then(console.log);
 }
 
 // ready event: on boot access to bot
