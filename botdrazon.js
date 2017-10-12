@@ -9,7 +9,11 @@ const bot = new Discord.Client();
 
 // todo: wire up reddit calls to randomly pull in image from r/aww r/foodporn r/earthporn
 // todo: letMeGoogleThatForYou
-
+// todo: pubg stats??
+// todo: aesthetize(input) = i n p u t 
+// todo: earn points per msg/time?
+// todo: bank heist mini adventure
+// todo: betting feature? 
 
 // message event
 bot.on("message", msg => {
@@ -25,8 +29,8 @@ bot.on("message", msg => {
       const command = args.shift().toLowerCase();
 
       switch (command) {
-        case "ping" :
-          pong(msg);
+        case "ayy" :
+          ayy(msg);
           break;
         case "help" :
           help(msg);
@@ -35,7 +39,7 @@ bot.on("message", msg => {
           roll(msg, args);
           break;
         case "weather" :
-          weather(msg, args);
+          getWeather(msg, args);
           break;
         /*case "forecast" :
           forecast(msg);
@@ -51,42 +55,72 @@ bot.on("message", msg => {
 });
 
 var help = function(msg) {
-  var menu = '```Available Commands:\n' +  
-    '1. Help - prints this menu\n'+
-    '2. Ping - replies pong, use to check if bot is alive\n' + 
+  var menu = '**Available Commands:**\n' +  
+    '1. Help - prints this menu\n' +
+    '2. Ayy - replies Lmao, use to check if bot is alive\n' + 
     '3. Roll - input a number, rolls from 1 to that number\n' + 
-    '4. Weather - input a city name, returns their current temp\n' +  
+    '4. Weather - input a city or zipcode, returns current conditions\n' +  
     '5. Lenny - pass a number, returns that many lennyFaces' +
     // Forecast - returns quick 5 day hi/low forecast for passed city
     // Earth - returns a top r/earthPorn page from today
-    '```'
-  msg.channel.send(menu);
+    ''
+  msg.channel.send({embed: {
+    color: 3447003,
+    description: menu
+  }});
 }
 
-var pong = function(msg) {
-  msg.channel.send("*pong!*");
+var ayy = function(msg) {
+  // an owner-only check
+  // if(msg.author.id !== config.ownerID) return;
+  msg.channel.send("*lmao*");
 }
 
-var weather = function(msg, args) {
-
+var getWeather = function(msg, args) {
   let apiKey = config.weather;
-  var city = args[0];
-  if (!city) 
+  var input = args[0];
+  var url = "";
+  var city = "";
+
+  if (!args[0]) // nothing is passed, use default city
     city = config.homeTown;
-  if (args[1])
+  else if (!isNaN(input))  // a number is passed
+    if (input.length != 5) {
+      msg.channel.send('Invalid zip code entered');
+      return;
+    }
+    else
+      var zip = input;
+  else // something was passed; take the first passed param
+    city = input;
+
+  if (args[1]) // a city with a space is passed, add the rest to the city name
     city += ' ' + args[1];
-  var url = `http://api.openweathermap.org/data/2.5/weather?q=${city}&APPID=${apiKey}&units=imperial`
+
+  if (zip) 
+    url = `http://api.openweathermap.org/data/2.5/weather?zip=${zip},us&APPID=${apiKey}&units=imperial`
+  else
+    url = `http://api.openweathermap.org/data/2.5/weather?q=${city},us&APPID=${apiKey}&units=imperial`
 
   request(url, function (err, response, body) {
   if (err) {
     console.log('error:', error);
   } else {
-    let weather = JSON.parse(body);
-    console.log('weather');
-    let message = `*It is ${weather.main.temp} degrees in ${weather.name}*`;
-    msg.channel.send(message);
+    let obj = JSON.parse(body);
+    if (obj.cod == '400' || obj.cod == '404')
+      msg.channel.send('Bad request; check inputs.');
+    else {
+      //console.log(obj);
+      let message = `It is ${obj.main.temp} degrees in ${obj.name} with ${obj.weather[0].description}\n` +
+      `High: ${obj.main.temp_max} Low: ${obj.main.temp_min}\n` +
+      `Humidity: ${obj.main.humidity}% Wind: ${obj.wind.speed}mph Clouds: ${obj.clouds.all}%\n`
+      //msg.channel.send(message);
+      msg.channel.send({embed: {
+        color: 3447003,
+        description: message
+      }});
     }
-  });
+  }});
 }
 
 var forecast = function(msg) {
@@ -99,8 +133,8 @@ var forecast = function(msg) {
       console.log('error:', err);
     }
     else {
-      let weather = JSON.parse(body);
-      msg.channel.send(weather);
+      let obj = JSON.parse(body);
+      msg.channel.send(obj);
     }
   });
 }
@@ -111,6 +145,7 @@ var roll = function(msg, args) {
   msg.channel.send(`*You rolled ${rand}*`);
 }
 
+// https://www.lennyfaces.net/
 var lenny = function(msg, args) {
   var builder = `( ͡° ͜ʖ ͡°)`;
   if (args[0]) {
