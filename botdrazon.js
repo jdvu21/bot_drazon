@@ -73,13 +73,13 @@ var help = function(msg) {
 var ayy = function(msg) {
   // an owner-only check
   // if(msg.author.id !== config.ownerID) return;
-  msg.channel.send("*lmao*");
+  msg.channel.send("lmao");
 }
 
 var getWeather = function(msg, args) {
   let apiKey = config.weather;
   var input = args[0];
-  var url = "";
+  var url = "http://api.openweathermap.org/data/2.5/weather?";
   var city = "";
 
   if (!args[0]) // nothing is passed, use default city
@@ -94,27 +94,28 @@ var getWeather = function(msg, args) {
   else // something was passed; take the first passed param
     city = input;
 
-  if (args[1]) // a city with a space is passed, add the rest to the city name
-    city += ' ' + args[1];
+  if (args[1]) // a city with a space is passed, add the second param to the city 
+    city += ' ' + args[1]; // TODO: add the 'rest' of the args[]
 
   if (zip) 
-    url = `http://api.openweathermap.org/data/2.5/weather?zip=${zip},us&APPID=${apiKey}&units=imperial`
+    url += `zip=${zip},us&APPID=${apiKey}&units=imperial`
   else
-    url = `http://api.openweathermap.org/data/2.5/weather?q=${city},us&APPID=${apiKey}&units=imperial`
+    url += `q=${city},us&APPID=${apiKey}&units=imperial`
 
   request(url, function (err, response, body) {
   if (err) {
     console.log('error:', error);
-  } else {
+  } 
+  else {
     let obj = JSON.parse(body);
+
     if (obj.cod == '400' || obj.cod == '404')
       msg.channel.send('Bad request; check inputs.');
     else {
-      //console.log(obj);
       let message = `It is ${obj.main.temp} degrees in ${obj.name} with ${obj.weather[0].description}\n` +
       `High: ${obj.main.temp_max} Low: ${obj.main.temp_min}\n` +
       `Humidity: ${obj.main.humidity}% Wind: ${obj.wind.speed}mph Clouds: ${obj.clouds.all}%\n`
-      //msg.channel.send(message);
+
       msg.channel.send({embed: {
         color: 3447003,
         description: message
@@ -134,7 +135,8 @@ var forecast = function(msg) {
     }
     else {
       let obj = JSON.parse(body);
-      msg.channel.send(obj);
+      var message = ``;
+      msg.channel.send(message);
     }
   });
 }
@@ -150,7 +152,7 @@ var lenny = function(msg, args) {
   var builder = `( ͡° ͜ʖ ͡°)`;
   if (args[0]) {
     var count = args[0];
-    if (count > 150) 
+    if (count > 150 || isNaN(count)) 
       return;
 
     for (i = count; i != 1; i--)
@@ -178,7 +180,6 @@ var earthPorn = function(msg) {
 // ready event: on boot access to bot
 bot.on('ready', () => {
   bot.user.setGame(`A N I M E M E S`);
-  // console.log('Connected.');
   console.log(`Ready to serve on ${bot.guilds.size} servers, for ${bot.users.size} users.`);
 });
 
