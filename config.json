@@ -1,0 +1,8 @@
+{
+
+"prefix" : "-",
+"discord" : "YourDiscordBotTokenGoesBetweenTheseQuotes",
+"weather" : "YourOpenWeatherMapAPIKeyGoesHere",
+"homeTown" : "YourHomeTownGoesHere"
+
+}
