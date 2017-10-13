@@ -41,9 +41,9 @@ bot.on("message", msg => {
         case "weather" :
           getWeather(msg, args);
           break;
-        /*case "forecast" :
+        case "forecast" :
           forecast(msg);
-          break; */
+          break; 
         case "lenny" :
           lenny(msg, args);
           break;
@@ -125,18 +125,48 @@ var getWeather = function(msg, args) {
 }
 
 var forecast = function(msg) {
-  let city = msg.content.slice(8).trim();
   let apiKey = config.weather;
-  let url = `http://api.openweathermap.org/data/2.5/forecast?q=${city},us&APPID=${apiKey}&units=imperial`
-  
+  //var input = args[0];
+  var city = "";
+
+  let url = `http://api.openweathermap.org/data/2.5/forecast?q=${config.homeTown},US&APPID=${config.weather}&units=imperial`
   request(url, function (err, response, body) {
     if (err) {
       console.log('error:', err);
     }
     else {
       let obj = JSON.parse(body);
-      var message = ``;
+      //console.log(obj);
+      var message = `**Six Day Forecast for ${config.homeTown}**\n`;
+      var dates = new Array(6);
+      var highs = new Array(6);
+      var lows = new Array(6);
+      var index = 0;
+
+      for (let i=0; i < obj.list.length; i++) {
+        var parsedDate = obj.list[i].dt_txt.slice(5,10);
+
+        if (!dates.includes(parsedDate)) {
+          dates[index] = parsedDate;
+          highs[index] = obj.list[i].main.temp_max;
+          lows[index] = obj.list[i].main.temp_min;
+          index++;
+        }
+      }
+
+      // prints everything in the array
+      for (let i=0; i < 6; i++) {
+        message += `${dates[i]} High: ${highs[i]} Low: ${lows[i]}\n`;
+      }
+      
       msg.channel.send(message);
+      /* 6 day forecast
+      - get the date of each day
+      - add up each high/low and divide by 
+      */
+
+      //console.log(message);
+      //msg.channel.send(message);
     }
   });
 }
